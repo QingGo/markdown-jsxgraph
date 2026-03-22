@@ -1,6 +1,6 @@
 {
   "name": "markdown-jsxgraph",
-  "displayName": "Markdown Preview JSXGraph Support",
+  "displayName": "JSXGraph Support In Markdown Preview",
   "description": "Render JSXGraph inside VSCode Markdown Preview",
   "version": "0.1.0",
   "publisher": "QingGo",
