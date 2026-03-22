@@ -1,0 +1,13 @@
+.vscode/**
+.gitignore
+.vscodeignore
+tsconfig.json
+src/**
+node_modules/**
+out/*.map
+*.vsix
+test.md
+images/**
+media/style.css.map
+# Keep only necessary media files
+# media/jsxgraphcore.js is already kept by default if not ignored
