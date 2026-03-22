@@ -1,0 +1,42 @@
+{
+  "name": "markdown-jsxgraph",
+  "displayName": "Markdown Preview JSXGraph Support",
+  "description": "Render JSXGraph inside VSCode Markdown Preview",
+  "version": "0.1.0",
+  "publisher": "QingGo",
+  "author": "QingGo",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/index.js",
+  "activationEvents": [],
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewScripts": [
+      "./media/jsxgraphcore.js",
+      "./media/main.js"
+    ],
+    "markdown.previewStyles": [
+      "./media/jsxgraph.css",
+      "./media/style.css"
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "18.x",
+    "@types/markdown-it": "^12.2.3",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "jsxgraph": "^1.7.0"
+  }
+}
