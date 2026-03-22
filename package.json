@@ -6,6 +6,10 @@
   "publisher": "QingGo",
   "author": "QingGo",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QingGo/markdown-jsxgraph.git"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
