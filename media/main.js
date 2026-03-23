@@ -1,4 +1,6 @@
 (function () {
+    let customFunctionsInitialized = false;
+
     const initJSXGraphs = () => {
         // VSCode injects previewScripts asynchronously.
         // Wait until JSXGraph is loaded and available globally.
@@ -7,6 +9,38 @@
             return;
         }
 
+        // 1. Initialize custom global functions once
+        if (!customFunctionsInitialized) {
+            const configEl = document.getElementById('jsxgraph-config');
+            if (configEl) {
+                const configBase64 = configEl.getAttribute('data-config');
+                if (configBase64) {
+                    try {
+                        const customCode = decodeURIComponent(escape(window.atob(configBase64)));
+                        const script = document.createElement('script');
+                        // Find nonce to bypass CSP
+                        let nonce = '';
+                        const scripts = document.querySelectorAll('script[nonce]');
+                        if (scripts.length > 0) {
+                            nonce = scripts[0].nonce || scripts[0].getAttribute('nonce');
+                        }
+                        if (nonce) {
+                            script.setAttribute('nonce', nonce);
+                        }
+                        script.textContent = customCode;
+                        document.body.appendChild(script);
+                        customFunctionsInitialized = true;
+                    } catch (e) {
+                        console.error('Error initializing custom JSXGraph functions:', e);
+                    }
+                }
+            } else {
+                // If no config element found yet, we might be in a partial render. 
+                // We'll try again on the next mutation.
+            }
+        }
+
+        // 2. Initialize each container
         const containers = document.querySelectorAll('.jsxgraph-container:not(.initialized)');
         containers.forEach(container => {
             container.classList.add('initialized');
@@ -44,25 +78,15 @@
                             // Make sure JXG and containerId are available to the evaled code
                             var JXG = window.JXG;
 
-                            // Wrap initBoard to inject sensible defaults for pan and zoom
-                            var _origInitBoard = JXG.JSXGraph.initBoard;
-                            JXG.JSXGraph.initBoard = function(id, opts) {
-                                opts = opts || {};
-                                if (opts.pan === undefined) opts.pan = { enabled: true, needShift: false };
-                                if (opts.zoom === undefined) opts.zoom = { enabled: true, wheel: true, needShift: false, factorX: 1.05, factorY: 1.05 };
-                                else {
-                                    if (opts.zoom.factorX === undefined) opts.zoom.factorX = 1.05;
-                                    if (opts.zoom.factorY === undefined) opts.zoom.factorY = 1.05;
-                                }
-                                return _origInitBoard.call(JXG.JSXGraph, id, opts);
-                            };
-                            
                             ${code}
 
                             // After user code runs, auto-fit the board to show all elements
-                            var _board = JXG.JSXGraph.boards && JXG.JSXGraph.boards[containerId];
-                            if (_board && typeof _board.zoomFit === 'function') {
-                                _board.zoomFit(0.1); // 0.1 = 10% margin around elements
+                            // Only if not already managed by __jxgEngine
+                            if (!window.__jxgEngine || !window.__jxgEngine[containerId]) {
+                                var _board = JXG.JSXGraph.boards && JXG.JSXGraph.boards[containerId];
+                                if (_board && typeof _board.zoomFit === 'function') {
+                                    _board.zoomFit(0.1); // 0.1 = 10% margin around elements
+                                }
                             }
                         } catch (err) {
                             console.error('JSXGraph user code error:', err);
@@ -91,14 +115,9 @@
     // Run initialization
     initJSXGraphs();
 
-    // Since Markdown preview updates the DOM dynamically without reloading the webview
-    // when the user types, we use a MutationObserver to watch for new containers being added.
+    // Watch for new containers being added
     const observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-            if (mutation.type === 'childList') {
-                initJSXGraphs();
-            }
-        }
+        initJSXGraphs();
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
